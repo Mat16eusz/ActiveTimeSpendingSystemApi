@@ -151,6 +151,7 @@ app.get("/rankings", async function(req, res) {
 app.post("/ranking", async function(req, res) {
     const ranking = new Ranking({
         idSocialMedia: req.body.idSocialMedia,
+        fullName: req.body.fullName,
         score: req.body.score
     });
 

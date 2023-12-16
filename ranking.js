@@ -4,6 +4,9 @@ const rankingSchema = new mongoose.Schema({
     idSocialMedia: {
         type: String
     },
+    fullName: {
+        type: String
+    },
     score: {
         type: Number
     }
