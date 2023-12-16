@@ -3,6 +3,8 @@ const app = express();
 const mongoose = require("mongoose");
 require('dotenv').config();
 const User = require("./user.js");
+const Coordinate = require("./coordinate.js");
+const Ranking = require("./ranking.js");
 
 app.use(express.json());
 let port = process.env.PORT || 3000;
@@ -36,7 +38,15 @@ app.get("/users", async function(req, res) {
     res.status(200).json(users);
 });
 
-app.post("/users", async function(req, res) {
+app.get("/user/:id", async function(req, res) {
+    const user = await User.findOne({"idSocialMedia": req.params.id}).exec();
+    if (!user) {
+        return res.status(404).json({"success": false, "message": "User not found."});
+    }
+    res.status(200).json(user);
+});
+
+app.post("/user", async function(req, res) {
     const user = new User({
         idSocialMedia: req.body.idSocialMedia,
         firstName: req.body.firstName,
@@ -55,7 +65,7 @@ app.post("/users", async function(req, res) {
     }
 });
 
-app.put("/users/:id", async function(req, res) {
+app.put("/user/:id", async function(req, res) {
     let conditions = { idSocialMedia: req.params.id };
 
     User.findOneAndUpdate(conditions, {
@@ -70,7 +80,101 @@ app.put("/users/:id", async function(req, res) {
         res.status(200).json({"success": true, "message": "User details update."});
     }).catch(error => {
         res.status(500).json({"success": false, "message": "Error in updating user details. Error: " + error});
-        console.log("Data not updated - token. Error: " + error);
+        console.log("Data not updated. Error: " + error);
+    });
+});
+
+app.get("/coordinates", async function(req, res) {
+    const coordinates = await Coordinate.find().exec();
+    res.status(200).json(coordinates);
+});
+
+app.put("/coordinate/:id", async function(req, res) {
+    let conditions = { idSocialMedia: req.params.id };
+    const coordinate = await Coordinate.findOneAndUpdate(conditions, {
+        $set:{
+            firstName: req.body.firstName,
+            latitude: req.body.latitude,
+            longitude: req.body.longitude
+        }
+    });
+
+    if (!coordinate) {
+        req.method = 'POST';
+        req.url = '/coordinate';
+
+        const coordinate = new Coordinate({
+            idSocialMedia: req.body.idSocialMedia,
+            firstName: req.body.firstName,
+            latitude: req.body.latitude,
+            longitude: req.body.longitude
+        });
+    
+        try {
+            await coordinate.save();
+            res.status(200).json({"success": true, "message": "Coordinate details saved."});
+        } catch (error) {
+            res.status(400).json({"success": false, "message": "Error in saving coordinate details. Error: " + error});
+            console.log("No coordinate added. Error: " + error);
+        }
+    } else {
+        Coordinate.findOneAndUpdate(conditions, {
+            $set:{
+                firstName: req.body.firstName,
+                latitude: req.body.latitude,
+                longitude: req.body.longitude
+            }
+        }).then(result => {
+            res.status(200).json({"success": true, "message": "Coordinate details update."});
+        }).catch(error => {
+            res.status(500).json({"success": false, "message": "Error in updating coordinate details. Error: " + error});
+            console.log("Data not updated. Error: " + error);
+        });
+    }
+});
+
+app.delete("/coordinate/:id", async function(req, res) {
+    try {
+        await Coordinate.findOneAndDelete({"idSocialMedia": req.params.id});
+        res.send("The user coordinate has been removed.");
+    } catch (error) {
+        res.status(400).json({"success": false, "message": "Error removing a user coordinate. Error: " + error});
+        console.log("Error removing a user coordinate. Error: " + error);
+    }
+});
+
+app.get("/rankings", async function(req, res) {
+    const rankings = await Ranking.find().exec();
+    res.status(200).json(rankings);
+});
+
+app.post("/ranking", async function(req, res) {
+    const ranking = new Ranking({
+        idSocialMedia: req.body.idSocialMedia,
+        score: req.body.score
+    });
+
+    try {
+        await ranking.save();
+        res.status(200).json({"success": true, "message": "Ranking details saved."});
+    } catch (error) {
+        res.status(400).json({"success": false, "message": "Error in saving ranking details. Error: " + error});
+        console.log("No ranking added. Error: " + error);
+    }
+});
+
+app.put("/ranking/:id", async function(req, res) {
+    let conditions = { idSocialMedia: req.params.id };
+
+    Ranking.findOneAndUpdate(conditions, {
+        $inc:{
+            score: req.body.score
+        }
+    }).then(result => {
+        res.status(200).json({"success": true, "message": "Ranking details update."});
+    }).catch(error => {
+        res.status(500).json({"success": false, "message": "Error in updating ranking details. Error: " + error});
+        console.log("Data not updated. Error: " + error);
     });
 });
 
