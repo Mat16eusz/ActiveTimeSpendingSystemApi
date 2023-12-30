@@ -11,6 +11,6 @@ const rankingSchema = new mongoose.Schema({
         type: Number
     }
 
-}, {collection:"rankings"});
+}, { collection: "rankings" });
 
 module.exports = mongoose.model("Ranking", rankingSchema);

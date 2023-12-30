@@ -14,6 +14,6 @@ const coordinateSchema = new mongoose.Schema({
         type: Number
     }
 
-}, {collection:"coordinates"});
+}, { collection: "coordinates" });
 
 module.exports = mongoose.model("Coordinate", coordinateSchema);
